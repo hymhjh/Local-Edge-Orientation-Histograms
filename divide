@@ -1,0 +1,83 @@
+package cv;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class divide {
+	int width,height;                          //the width and height of the image.
+	int[] pixels;                              //gray value of pixels.
+    cells[] cell;                              //a array for all cells in image.
+    int[][] mags;                              //weighted vote.
+    int[][] angles;                            //angle of pixels.
+	
+    void set(int a,int b){                    //initialize the scale of magnitude and angles.
+    	mags=new int[a][b];
+    	angles=new int[a][b];
+    }
+    void setIn(int a,int b){                  //initialize the scale of pixels and cells of the image.
+    	pixels=new int[a*b];
+    	cell=new cells[a*b/256];
+    }
+	void divAndPrint(){                             //divide the picture into 16x16 pixels cells
+		
+		File file = new File("Lena256.bmp"); 
+		BufferedImage image = null;
+		try {
+			image = ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		int x=0,y=0,k=0;                 //x is the index of cells, y is the index of pixels in every cells.
+		int[] rgb=new int[3];
+		width=image.getWidth();
+		height=image.getHeight();
+		setIn(height,width);             //initialize the scale of cells and pixels in image.
+		System.out.print(width+" "+height+"\n");
+
+		for(int r=0;r<height;r=r+16){    //divide the image into 16x16's cells.
+			for(int c=0;c<width;c=c+16){
+				for(int i=r;i<r+16;i++){
+					   for(int j=c;j<c+16;j++){
+						   int pixel=image.getRGB(j, i);
+						     rgb[0] = (pixel & 0xff0000) >> 16;
+					         rgb[1] = (pixel & 0xff00) >> 8;
+					         rgb[2] = (pixel & 0xff);
+						     pixels[k]=(rgb[0]+rgb[1]+rgb[2])/3;    //to get the gray value.
+						     
+						     if(y==256){                            //every cell has 256 pixels. 
+							    	x++;
+							 }
+						     if(y%256==0){
+						    	 cell[x]=new cells();               //create a new cell.
+						    	 y=0;
+						     }						     
+						     cell[x].setcells(pixels[k],y);		    //assign values to pixels in cells.	  
+						     cell[x].setangle(angles[i][j],y);
+						     cell[x].setmags(mags[i][j], y);
+						     y++;
+						     
+						     k++;
+					   }
+				}	
+			}
+		}
+	}
+	void setmagnitudes(int[][] mpixels,int w,int h){  
+		for(int k=0;k<h;k++){
+			for(int l=0;l<w;l++){
+				mags[k][l]=mpixels[k][l];
+			}
+		}
+	}
+	void setangles(int[][] anglepixels,int w,int h){
+		for(int k=0;k<h;k++){
+			for(int l=0;l<w;l++){
+				angles[k][l]=anglepixels[k][l];
+			}
+		}
+	}
+}
