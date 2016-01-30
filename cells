@@ -1,0 +1,109 @@
+package cv;
+
+public class cells {
+	int[] pixelInCell=new int[256];         //the gray values of pixels in cell
+	int[][] sortpixels=new int[16][16];     //the 2-D array sorted gray values of pixels in cell
+	int[] angleInCell=new int[256];         //the angles of pixels in cells.
+	int[][] anglepixel=new int[16][16];     //the sorted angles of pixels in cells.
+	int[] angle_cell=new int[9];            //histogram of angle quantization in 9 bins.
+	int[] magInCell=new int[256];           //magnitude in pixels for every cell.
+	int[][] mag=new int[16][16];            //the sorted magnitude.
+	double[][] vote=new double[16][16];     //the weighted vote of pixels in cell.
+	double[] vote_cell=new double[9];      //the weighted vote of cell in 9 bins
+	int[] weight_cell=new int[9];
+
+	cells(){
+		for(int y=0;y<256;y++){
+			pixelInCell[y]=0;
+			magInCell[y]=0;
+		}
+	}
+	void setcells(int a,int y){ //a is parameter, y is the index of pixelInCell.Assign the gray value into all cells.
+		pixelInCell[y]=a;
+	}
+	void setmags(int a,int y){ //a is parameter, y is the index of pixelInCell.Assign the weighted vote into all cells.
+		magInCell[y]=a;
+	}
+	void setangle(int a,int y){ //a is parameter, y is the index of pixelInCell.Assign the angles into all cells.
+		angleInCell[y]=a;
+	}
+	void printcells(){          //print every cell's gray value of pixels.
+		for(int y=0;y<256;y++){
+			System.out.print(y+":"+pixelInCell[y]+" ");
+		}
+		System.out.println();
+	}
+	void sortcells(){           //let every pixel's gray value of cells stored as 2-D array[r][c].
+		int k=0;
+		for(int r=0;r<16;r++){
+			for(int c=0;c<16;c++){
+				sortpixels[r][c]=pixelInCell[k];
+				k++;
+			}
+		}
+	}
+	void sortangles(){           //let every pixel's gray value of cells stored as 2-D array[r][c].
+		int k=0;
+		for(int r=0;r<16;r++){
+			for(int c=0;c<16;c++){
+				anglepixel[r][c]=angleInCell[k];
+				k++;
+			}
+		}
+	}
+	void sortmag(){           //let every pixel's weighted vote of cells stored as 2-D array[r][c].
+		int k=0;
+		for(int r=0;r<16;r++){
+			for(int c=0;c<16;c++){
+				mag[r][c]=magInCell[k];
+				k++;
+			}
+		}
+	}
+	void printsort(){           //print the sorted cells to check the gray value of pixels in cells.
+		for(int r=0;r<16;r++){
+			System.out.println();
+			for(int c=0;c<16;c++){
+				System.out.print(sortpixels[r][c]+" ");
+			}
+		}
+	}
+	void calculate_vote(){    //calculate the weighted vote
+		int k=0,sum_mag=0,num=0;
+		double ave;
+		for(int r=0;r<16;r++){
+			for(int c=0;c<16;c++){
+				if(anglepixel[r][c]!=-1) {
+					sum_mag+=mag[r][c];    //the total magnitude of cell
+					num++;                 //the total number of magnitudes in cell
+				}
+				else sum_mag+=k;           //calculate the average magnitude of cell.
+			}
+		}
+		ave=1.0*sum_mag/num;
+		for(int i=0;i<16;i++){
+			for(int j=0;j<16;j++){
+				vote[i][j]=mag[i][j]/ave;  //the weighted vote of pixels in cell.
+			}
+		}
+	}
+	void countHistogram(){                    //obtain a histogram of angle quantization.
+		int k;
+		for(int v=0;v<9;v++){
+			vote_cell[v]=0.0;
+		}
+		for(int i=0;i<16;i++){
+			for(int j=0;j<16;j++){
+				k=anglepixel[i][j];
+				if(k>0) {
+					angle_cell[k-1]++;           //the histogram of angle quantization.
+					vote_cell[k-1]+=vote[i][j];  //the histogram of weighted vote of every pixel.
+					}
+				else continue;
+			}
+		}
+		for(int l=0;l<9;l++){
+			weight_cell[l]=(int) Math.round(angle_cell[l]*1.0+vote_cell[l]);//the histogram of angle quantization plus weighted vote.
+		}
+	}
+}
